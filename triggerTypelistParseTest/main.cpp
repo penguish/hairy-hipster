@@ -109,6 +109,18 @@ int main(int argc, const char * argv[]) {
     C14::for_each<C14::simple_printer, twolist> list2;
     list2.do_it();
     
+    std::cout<<"\n3"<<std::endl;
+    typedef C14::drop_n<2, n> three;
+    C14::for_each<C14::simple_printer, three> list3;
+    list3.do_it();
+    
+    std::cout<<"\n4"<<std::endl;
+    typedef C14::update<double,4,n> four;
+    C14::for_each<C14::simple_printer, n>::do_it();
+    std::cout<<std::endl;
+    C14::for_each<C14::simple_printer, four>::do_it();
+
+    std::cout<<std::endl;
     
     return 0;
 }

@@ -14,7 +14,16 @@ namespace C14{
     //a simple typelist with head and tail defined
     template <class...t>
     struct MyList;
-    
+    //empty list
+    template <class...t>
+    struct MyList{
+        //member add
+        template<class newelement>
+        using add=MyList<newelement>;
+        //member 'size'
+        static constexpr int size(){ return 0;}
+    };
+    //normal list
     template <class element,class...t>
     struct MyList<element, t...>{
         typedef element head;
@@ -68,9 +77,58 @@ namespace C14{
     struct first_n_impl<1,MyList<head,tail...>>{
         typedef  MyList<head> type;
     };
+    template<class head, class...tail>
+    struct first_n_impl<0,MyList<head,tail...>>{
+        typedef  MyList<> type;
+    };
     //utility
     template<int i, class mylist>
     using first_n=typename first_n_impl<i,mylist>::type;
+    
+    
+    //drop the first n elements
+    //introduction
+    template<int i, class mylist>
+    struct drop_n_impl;
+    //recursive match
+    template<int i, class head, class...tail>
+    struct drop_n_impl<i,MyList<head,tail...>>{
+        typedef typename drop_n_impl< i-1, MyList<tail...> >::type type;
+    };
+    //terminating match
+    template<class head, class...tail>
+    struct drop_n_impl<0,MyList<head, tail...>>{
+        typedef  MyList<head, tail...> type;
+    };
+    //terminating match : need to clear up design, if I need two terminators!
+    template<>
+    struct drop_n_impl<0,MyList<>>{
+        typedef  MyList<> type;
+    };
+    //utility
+    template<int i, class mylist>
+    using drop_n=typename drop_n_impl<i,mylist>::type;
+
+    //update an element at index i to a new value
+    //introduction
+    template <class newElement, int i, class mylist>
+    struct update_impl;
+    //implementation
+    template <class newElement, int i, class head, class...tail>
+    struct update_impl<newElement, i, MyList<head, tail...>>{
+        typedef MyList<head, tail...> thisList;
+        //take the list before the index
+        typedef first_n<i,thisList> list1;
+        //join on the new element
+        typedef typename list1::template add<newElement> newList1;
+        //take the list after the index
+        static constexpr int indexAfter=i+1;
+        typedef drop_n<indexAfter,thisList> list2;
+        typedef join<newList1,list2> type;
+    };
+    //utility
+    template <class newElement, int i, class mylist>
+    using update=typename update_impl<newElement, i, mylist>::type;
     
     //any argument meets condition
     //any
@@ -80,12 +138,12 @@ namespace C14{
     //recursing match
     template <template <class element> class condition, class head, class... tail>
     struct any<condition, MyList<head, tail...>> {
-        static const bool value = condition<head>::value or any<condition, MyList<tail...>>::value;
+        static constexpr bool value = condition<head>::value or any<condition, MyList<tail...>>::value;
     };
     //terminating match
     template <template <class element> class condition, class head>
     struct any<condition, MyList<head>> {
-        static const bool value = condition<head>::value;
+        static constexpr bool value = condition<head>::value;
     };
     
     template <class T>
@@ -178,13 +236,15 @@ namespace C14{
     ///edm specific
     struct no_aux{};
     
-    template<typename _objt,typename _list_of_feats, typename _cont, typename _aux = no_aux>
+    template<typename iobjt,typename ilist_of_feats, typename icont, typename iaux = no_aux>
     struct type_info {
-        typedef _objt object;
-        typedef _list_of_feats list_of_features;
-        typedef _cont container;
-        typedef _aux aux;
+        typedef iobjt object;
+        typedef ilist_of_feats list_of_features;
+        typedef icont container;
+        typedef iaux aux;
     };
+    
+
 
 }
 #endif
