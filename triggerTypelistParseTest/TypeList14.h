@@ -12,9 +12,10 @@
 namespace C14{
     
     //a simple typelist with head and tail defined
+    //introduction
     template <class...t>
     struct MyList;
-    //empty list
+    //empty list; cant do much
     template <class...t>
     struct MyList{
         //member add
@@ -57,10 +58,10 @@ namespace C14{
     
     //implement generic 'size'
     template <class mylist>
-    struct size {
+    struct size_impl {
         static constexpr int value = std::tuple_size<typename mylist::tuple>::value;
     };
-    
+
     //first n elements, first_n
     //introduction
     template<int i, class mylist>
@@ -146,6 +147,7 @@ namespace C14{
         static constexpr bool value = condition<head>::value;
     };
     
+    //curry one template parameter
     template <class T>
     struct is_same{
         template <class S>
@@ -243,7 +245,23 @@ namespace C14{
         typedef icont container;
         typedef iaux aux;
     };
-    
+    /** example
+     typedef C14::MyList<int, long, char, testY> m;
+     std::cout << "["<< typeid(m).name() << "] \n";
+     std::cout << "member at(1)["<< typeid(m::at<1>).name() << "] \n";
+     std::cout << "generic at(2)["<< typeid(C14::at<m,2>).name() << "] \n";
+     std::cout << "member 'size' ["<< (m::size()) << "] \n";
+     std::cout << "generic 'size' ["<< (C14::size<m>::value) << "] \n";
+     typedef m::add<double> newlist;
+     
+     C14::for_each<C14::simple_printer, newlist>::do_it();
+     using n=m::add<int *>;
+     std::cout << "any 'pointer' ["<< (C14::any<std::is_pointer,n>::value) << "] \n";
+     
+     typedef C14::is_same<int> same_as_int;
+     std::cout << "any 'int' ["<< (C14::any<same_as_int::type,n>::value) << "] \n";
+     std::cout << "any 'int' ["<< (C14::any<C14::is_int,n>::value) << "] \n";
+     **/
 
 
 }

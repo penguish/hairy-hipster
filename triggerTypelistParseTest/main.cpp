@@ -80,8 +80,8 @@ int main(int argc, const char * argv[]) {
     std::cout << "generic 'size' ["<< (C14::size<m>::value) << "] \n";
     typedef m::add<double> newlist;
     
-    C14::for_each<C14::simple_printer, newlist> myprint3;
-    myprint3.do_it();
+    C14::for_each<C14::simple_printer, newlist>::do_it();
+    
     std::cout<<std::endl;
     C14::accumulate<C14::add,C14::counter, newlist> myprint4;
     std::cout<<myprint4.do_it()<<std::endl;
