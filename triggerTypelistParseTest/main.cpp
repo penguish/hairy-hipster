@@ -77,7 +77,7 @@ int main(int argc, const char * argv[]) {
     std::cout << "member at(1)["<< typeid(m::at<1>).name() << "] \n";
     std::cout << "generic at(2)["<< typeid(C14::at<m,2>).name() << "] \n";
     std::cout << "member 'size' ["<< (m::size()) << "] \n";
-    std::cout << "generic 'size' ["<< (C14::size<m>::value) << "] \n";
+    std::cout << "generic 'size' ["<< (C14::size<m>) << "] \n";
     typedef m::add<double> newlist;
     
     C14::for_each<C14::simple_printer, newlist>::do_it();
@@ -93,13 +93,13 @@ int main(int argc, const char * argv[]) {
     std::cout<<std::endl;
 
 
-    std::cout << "any 'pointer' ["<< (C14::any<std::is_pointer,m>::value) << "] \n";
+    std::cout << "any 'pointer' ["<< (C14::any<std::is_pointer,m>::found) << "] \n";
     using n=m::add<int *>;
-    std::cout << "any 'pointer' ["<< (C14::any<std::is_pointer,n>::value) << "] \n";
+    std::cout << "any 'pointer' ["<< (C14::any<std::is_pointer,n>::found) << "] \n";
 
     typedef C14::is_same<int> same_as_int;
-    std::cout << "any 'int' ["<< (C14::any<same_as_int::type,n>::value) << "] \n";
-    std::cout << "any 'int' ["<< (C14::any<C14::is_int,n>::value) << "] \n";
+    std::cout << "any 'int' ["<< (C14::any<same_as_int::type,n>::found) << "] \n";
+    std::cout << "any 'int' ["<< (C14::any<C14::is_int,n>::found) << "] \n";
     
     C14::for_each<C14::simple_printer, n> list1;
     list1.do_it();
@@ -115,13 +115,16 @@ int main(int argc, const char * argv[]) {
     list3.do_it();
     
     std::cout<<"\n4"<<std::endl;
-    typedef C14::update<double,4,n> four;
+    typedef C14::update<n,4,double> four;
     C14::for_each<C14::simple_printer, n>::do_it();
     std::cout<<std::endl;
     C14::for_each<C14::simple_printer, four>::do_it();
 
     std::cout<<std::endl;
-    
+    typedef C14::is_same<double> same_as_dbl;
+    std::cout << "any 'dbl' ["<< (C14::any<same_as_dbl::type,four>::idx) << "] \n";
+    std::cout<<std::endl;
+
     return 0;
 }
 

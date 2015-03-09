@@ -61,6 +61,9 @@ namespace C14{
     struct size_impl {
         static constexpr int value = std::tuple_size<typename mylist::tuple>::value;
     };
+    
+    template <class myList>
+    static constexpr int size = size_impl<myList>::value;
 
     //first n elements, first_n
     //introduction
@@ -128,7 +131,7 @@ namespace C14{
         typedef join<newList1,list2> type;
     };
     //utility
-    template <class newElement, int i, class mylist>
+    template <class mylist, int i,class newElement>
     using update=typename update_impl<newElement, i, mylist>::type;
     
     //any argument meets condition
@@ -139,13 +142,16 @@ namespace C14{
     //recursing match
     template <template <class element> class condition, class head, class... tail>
     struct any<condition, MyList<head, tail...>> {
-        static constexpr bool value = condition<head>::value or any<condition, MyList<tail...>>::value;
+        static constexpr bool found = condition<head>::value or any<condition, MyList<tail...>>::found;
+        static constexpr int idx = condition<head>::value ? 0 : 1 + any<condition, MyList<tail...>>::idx;
     };
     //terminating match
     template <template <class element> class condition, class head>
     struct any<condition, MyList<head>> {
-        static constexpr bool value = condition<head>::value;
+        static constexpr bool found = condition<head>::value;
+        static constexpr int idx = found ? 0 : 1;
     };
+   
     
     //curry one template parameter
     template <class T>
@@ -235,7 +241,10 @@ namespace C14{
     template <typename S>
     using is_int = std::is_same<int, S>;
     
-    ///edm specific
+    
+    
+    //*************************************************************************************
+    //edm specific
     struct no_aux{};
     
     template<typename iobjt,typename ilist_of_feats, typename icont, typename iaux = no_aux>
@@ -245,6 +254,42 @@ namespace C14{
         typedef icont container;
         typedef iaux aux;
     };
+    template<class thelist, int index,class new_element>
+    struct do_my_add;
+    
+    template<class thelist,  class O,class F,class... ContAux>
+    struct do_my_add<thelist,  -1, type_info<O,F,ContAux...>>{
+        typedef typename thelist::template add<type_info<O,F,ContAux...>> result;
+    };
+    
+    template<class thelist, int index,class O,class F,class...ContAux>
+    struct do_my_add<thelist,index,type_info<O,F,ContAux...>>{
+        typedef at<thelist,index> old_entry;
+        typedef typename old_entry::list_of_features old_feats;
+        typedef typename type_info<O,F,ContAux...>::list_of_features new_feats;
+        typedef join<old_feats, new_feats> extended;
+        typedef update<thelist, index,type_info<typename old_entry::object,extended,typename old_entry::container,typename old_entry::aux> > result;
+    };
+
+
+    template<class list_of_types, class newElement>
+    struct addWithChecking;
+    
+    //I don't think this is the same as the original!
+    template<class list_of_types,class O,class F,class...contAux>
+    struct addWithChecking<list_of_types, type_info<O,F,contAux...> >{
+        typedef type_info<O,F,contAux...> edmType;
+        typedef list_of_types thisList;
+        template<class T>
+        using is_this_container=is_same<typename edmType::container> ;
+        static constexpr int thisIndex = any<is_this_container,thisList>::idx;
+        typedef do_my_add<thisList,thisIndex,edmType> result;
+    };
+
+
+    
+    
+    
     /** example
      typedef C14::MyList<int, long, char, testY> m;
      std::cout << "["<< typeid(m).name() << "] \n";
